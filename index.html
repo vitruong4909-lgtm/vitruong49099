@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI vs. Manual Creativity Difficulty</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load D3.js -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* Custom font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Style for D3.js text */
+        .axis-label {
+            font-size: 12px;
+            fill: #4B5563; /* gray-600 */
+        }
+        .bar-label {
+            font-size: 12px;
+            font-weight: 500;
+            fill: #1F2937; /* gray-800 */
+        }
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            fill: #111827; /* gray-900 */
+            text-anchor: middle;
+        }
+        .axis path,
+        .axis line {
+            stroke: #D1D5DB; /* gray-300 */
+        }
+        .axis text {
+            fill: #4B5563; /* gray-600 */
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen p-4 md:p-8">
+
+    <div class="max-w-6xl mx-auto">
+        <h1 class="text-3xl font-bold text-gray-900 text-center mb-8">
+            Creative Difficulty: Manual Process vs. AI-Assisted
+        </h1>
+        <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">
+            This visualization compares the perceived difficulty (on a scale of 1-10) of key creative tasks. AI significantly lowers the barrier for ideation and technical execution, shifting the human's role more toward curation and direction.
+        </p>
+
+        <!-- Grid container for the two charts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            
+            <!-- Manual Creativity Chart Card -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">
+                    Manual Creative Difficulty
+                </h2>
+                <!-- SVG container for the manual chart -->
+                <div id="manual-chart-container">
+                    <svg id="manual-chart"></svg>
+                </div>
+                <p class="text-center text-gray-700 mt-4">
+                    Total Difficulty Score: 
+                    <span id="manual-total" class="font-bold text-2xl text-purple-600"></span>
+                </p>
+            </div>
+
+            <!-- AI-Assisted Creativity Chart Card -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">
+                    AI-Assisted Creative Difficulty
+                </h2>
+                <!-- SVG container for the AI chart -->
+                <div id="ai-chart-container">
+                    <svg id="ai-chart"></svg>
+                </div>
+                 <p class="text-center text-gray-700 mt-4">
+                    Total Difficulty Score: 
+                    <span id="ai-total" class="font-bold text-2xl text-orange-600"></span>
+                </p>
+            </div>
+        </div>
+
+        <div class="mt-10 p-6 bg-white rounded-lg shadow-lg">
+            <h3 class="text-xl font-semibold text-gray-800 mb-3">Key Takeaways</h3>
+            <div id="summary" class="text-gray-700 space-y-2">
+                <!-- Summary will be populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data based on a 1-10 scale of perceived difficulty
+        const manualData = [
+            { task: "Concept Ideation", difficulty: 8 },
+            { task: "Drafting & Composition", difficulty: 9 },
+            { task: "Generating Variations", difficulty: 7 },
+            { task: "Technical Execution", difficulty: 8 },
+            { task: "Final Curation & Polish", difficulty: 7 }
+        ];
+
+        const aiData = [
+            { task: "Concept Ideation", difficulty: 2 }, // Easy to get ideas
+            { task: "Drafting & Composition", difficulty: 3 }, // AI generates first draft
+            { task: "Generating Variations", difficulty: 1 }, // Trivial for AI
+            { task: "Technical Execution", difficulty: 2 }, // AI handles technical skill
+            { task: "Final Curation & Polish", difficulty: 5 }  // Human still needs taste
+        ];
+
+        // Calculate totals
+        const manualTotal = manualData.reduce((acc, d) => acc + d.difficulty, 0);
+        const aiTotal = aiData.reduce((acc, d) => acc + d.difficulty, 0);
+        const difficultyReduced = manualTotal - aiTotal;
+        const percentReduced = ((difficultyReduced / manualTotal) * 100).toFixed(0);
+
+        // Update total displays
+        document.getElementById('manual-total').textContent = `${manualTotal} Points`;
+        document.getElementById('ai-total').textContent = `${aiTotal} Points`;
+        
+        // Update summary text
+        // FIX: Removed unnecessary escape characters (\) from template literals
+        // FIX: Corrected typo 'class'' to 'class='
+        document.getElementById('summary').innerHTML = `
+            <p>AI assistance reduces the cumulative difficulty score from <strong class="text-purple-600">${manualTotal}</strong> to <strong class="text-orange-600">${aiTotal}</strong>.</p>
+            <p class="text-2xl font-bold text-green-700">This represents a ${percentReduced}% reduction in perceived creative effort.</p>
+            <p class="mt-4 text-sm text-gray-600">Tasks like ideation and iteration become trivial. The primary human difficulty shifts from technical execution (e.g., playing an instrument, designing a graphic) to high-level curation, taste, and strategic direction.</p>
+        `;
+
+        // Find the overall max difficulty for a consistent Y-axis
+        const yMax = 10; // Set explicit 1-10 scale
+
+        /**
+         * Creates a responsive bar chart.
+         * @param {string} containerId - The ID of the div containing the SVG.
+         * @param {string} svgId - The ID of the SVG element.
+         * @param {Array} data - The data array for the chart.
+         * @param {string} barColor - The hex color for the bars.
+         */
+        function createBarChart(containerId, svgId, data, barColor) {
+            
+            const container = d3.select("#" + containerId);
+            if (container.node() === null) {
+                console.error("Container not found:", containerId);
+                return;
+            }
+            
+            d3.select("#" + svgId).html(""); // Clear previous chart
+
+            const containerWidth = container.node().getBoundingClientRect().width;
+
+            // Set up margins
+            const margin = { top: 50, right: 20, bottom: 80, left: 60 };
+            const width = containerWidth - margin.left - margin.right;
+            const height = 400 - margin.top - margin.bottom;
+
+            const svg = d3.select("#" + svgId)
+                .attr("width", width + margin.left + margin.right)
+                .attr("height", height + margin.top + margin.bottom)
+                .append("g")
+                // FIX: Removed unnecessary escape characters (\) from template literals
+                .attr("transform", `translate(${margin.left},${margin.top})`);
+
+            // --- Create Scales ---
+
+            // X scale (Band scale for tasks)
+            const x = d3.scaleBand()
+                .domain(data.map(d => d.task))
+                .range([0, width])
+                .padding(0.2);
+
+            // Y scale (Linear scale for difficulty)
+            const y = d3.scaleLinear()
+                .domain([0, yMax]) // Use the consistent yMax (10)
+                .range([height, 0]);
+
+            // --- Create Axes ---
+
+            // X axis
+            svg.append("g")
+                .attr("class", "axis")
+                // FIX: Removed unnecessary escape characters (\) from template literals
+                .attr("transform", `translate(0,${height})`)
+                .call(d3.axisBottom(x))
+                .selectAll("text")
+                    .style("text-anchor", "end")
+                    .attr("dx", "-.8em")
+                    .attr("dy", ".15em")
+                    .attr("transform", "rotate(-45)");
+
+            // Y axis
+            svg.append("g")
+                .attr("class", "axis")
+                .call(d3.axisLeft(y).ticks(10)); // Explicitly set ticks for 1-10
+
+            // Y axis label
+            svg.append("text")
+                .attr("class", "axis-label")
+                .attr("transform", "rotate(-90)")
+                .attr("y", 0 - margin.left)
+                .attr("x", 0 - (height / 2))
+                .attr("dy", "1em")
+                .style("text-anchor", "middle")
+                .text("Perceived Difficulty (1-10)");
+
+            // --- Draw Bars ---
+            svg.selectAll(".bar")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", d => x(d.task))
+                .attr("y", d => y(0)) // Start at 0 for animation
+                .attr("width", x.bandwidth())
+                .attr("height", 0) // Start at 0 for animation
+                .attr("fill", barColor)
+                .attr("rx", 4) 
+                .attr("ry", 4)
+                .transition()
+                .duration(750)
+                .delay((d, i) => i * 100)
+                .attr("y", d => y(d.difficulty))
+                .attr("height", d => height - y(d.difficulty));
+
+
+            // --- Add Bar Labels (Numbers on top) ---
+            svg.selectAll(".bar-label")
+                .data(data)
+                .enter()
+                .append("text")
+                .attr("class", "bar-label")
+                .attr("x", d => x(d.task) + x.bandwidth() / 2)
+                .attr("y", d => y(d.difficulty) - 5)
+                .attr("text-anchor", "middle")
+                .style("opacity", 0)
+                .text(d => d.difficulty) // Show the difficulty number
+                .transition()
+                .duration(750)
+                .delay((d, i) => i * 100 + 300)
+                .style("opacity", 1);
+        }
+        
+        function drawCharts() {
+            createBarChart(
+                "manual-chart-container", 
+                "manual-chart", 
+                manualData, 
+                "#8B5CF6" // Tailwind purple-500
+            );
+            
+            createBarChart(
+                "ai-chart-container", 
+                "ai-chart", 
+                aiData, 
+                "#F97316" // Tailwind orange-600
+            );
+        }
+
+        // Initial draw
+        drawCharts();
+
+        // Redraw charts on window resize
+        window.addEventListener('resize', drawCharts);
+
+    </script>
+</body>
+</html>
