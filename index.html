@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI vs. Manual Creativity Difficulty</title>
+    <!-- Updated Title -->
+    <title>AI vs. Manual Creative Effort</title>
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Load D3.js -->
@@ -18,10 +19,11 @@
         .axis-label {
             font-size: 12px;
             fill: #4B5563; /* gray-600 */
+            font-weight: 600; /* Increased boldness */
         }
         .bar-label {
             font-size: 12px;
-            font-weight: 500;
+            font-weight: 700; /* Increased boldness for the data numbers */
             fill: #1F2937; /* gray-800 */
         }
         .chart-title {
@@ -36,17 +38,20 @@
         }
         .axis text {
             fill: #4B5563; /* gray-600 */
+            font-weight: 600; /* Increased boldness for axis ticks and labels (X-axis) */
         }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen p-4 md:p-8">
 
     <div class="max-w-6xl mx-auto">
+        <!-- Updated H1 Title -->
         <h1 class="text-3xl font-bold text-gray-900 text-center mb-8">
-            Creative Difficulty: Manual Process vs. AI-Assisted
+            Creative Effort: Manual Process vs. AI-Assisted
         </h1>
-        <p class="text-center text-gray-600 mb-10 max-w-3xl mx-auto">
-            This visualization compares the perceived difficulty (on a scale of 1-10) of key creative tasks. AI significantly lowers the barrier for ideation and technical execution, shifting the human's role more toward curation and direction.
+        <!-- Updated Paragraph Text (Bolder) -->
+        <p class="text-center text-gray-700 font-medium mb-10 max-w-3xl mx-auto">
+            This visualization compares the estimated **hours spent** on creative tasks. AI dramatically reduces the time required for generation and execution, allowing the creator to focus more time on strategic direction and final polish.
         </p>
 
         <!-- Grid container for the two charts -->
@@ -54,30 +59,34 @@
             
             <!-- Manual Creativity Chart Card -->
             <div class="bg-white p-6 rounded-lg shadow-lg">
+                <!-- Updated H2 Title -->
                 <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">
-                    Manual Creative Difficulty
+                    Manual Creative Effort (Hours)
                 </h2>
                 <!-- SVG container for the manual chart -->
                 <div id="manual-chart-container">
                     <svg id="manual-chart"></svg>
                 </div>
+                <!-- Updated Total Label -->
                 <p class="text-center text-gray-700 mt-4">
-                    Total Difficulty Score: 
+                    Total Estimated Hours: 
                     <span id="manual-total" class="font-bold text-2xl text-purple-600"></span>
                 </p>
             </div>
 
             <!-- AI-Assisted Creativity Chart Card -->
             <div class="bg-white p-6 rounded-lg shadow-lg">
+                <!-- Updated H2 Title -->
                 <h2 class="text-xl font-semibold text-gray-800 mb-4 text-center">
-                    AI-Assisted Creative Difficulty
+                    AI-Assisted Creative Effort (Hours)
                 </h2>
                 <!-- SVG container for the AI chart -->
                 <div id="ai-chart-container">
                     <svg id="ai-chart"></svg>
                 </div>
+                <!-- Updated Total Label -->
                  <p class="text-center text-gray-700 mt-4">
-                    Total Difficulty Score: 
+                    Total Estimated Hours: 
                     <span id="ai-total" class="font-bold text-2xl text-orange-600"></span>
                 </p>
             </div>
@@ -85,51 +94,51 @@
 
         <div class="mt-10 p-6 bg-white rounded-lg shadow-lg">
             <h3 class="text-xl font-semibold text-gray-800 mb-3">Key Takeaways</h3>
-            <div id="summary" class="text-gray-700 space-y-2">
+            <!-- Updated Summary Container (Bolder) -->
+            <div id="summary" class="text-gray-800 font-medium space-y-2">
                 <!-- Summary will be populated by JS -->
             </div>
         </div>
     </div>
 
     <script>
-        // Data based on a 1-10 scale of perceived difficulty
+        // Data based on estimated hours for a complex creative project (e.g., generating a full marketing campaign or large creative asset)
         const manualData = [
-            { task: "Concept Ideation", difficulty: 8 },
-            { task: "Drafting & Composition", difficulty: 9 },
-            { task: "Generating Variations", difficulty: 7 },
-            { task: "Technical Execution", difficulty: 8 },
-            { task: "Final Curation & Polish", difficulty: 7 }
+            { task: "Concept Ideation", effort: 25 }, // Hours
+            { task: "Drafting & Composition", effort: 40 }, // Hours
+            { task: "Generating Variations", effort: 30 }, // Hours
+            { task: "Technical Execution", effort: 35 }, // Hours
+            { task: "Final Curation & Polish", effort: 20 } // Hours
         ];
 
         const aiData = [
-            { task: "Concept Ideation", difficulty: 2 }, // Easy to get ideas
-            { task: "Drafting & Composition", difficulty: 3 }, // AI generates first draft
-            { task: "Generating Variations", difficulty: 1 }, // Trivial for AI
-            { task: "Technical Execution", difficulty: 2 }, // AI handles technical skill
-            { task: "Final Curation & Polish", difficulty: 5 }  // Human still needs taste
+            { task: "Concept Ideation", effort: 5 }, // Prompting and filtering
+            { task: "Drafting & Composition", effort: 8 }, // AI generates, human edits
+            { task: "Generating Variations", effort: 3 }, // Trivial for AI, fast prompting
+            { task: "Technical Execution", effort: 6 }, // AI handles skill, human manages output
+            { task: "Final Curation & Polish", effort: 12 }  // Human still needs significant taste and review
         ];
 
         // Calculate totals
-        const manualTotal = manualData.reduce((acc, d) => acc + d.difficulty, 0);
-        const aiTotal = aiData.reduce((acc, d) => acc + d.difficulty, 0);
-        const difficultyReduced = manualTotal - aiTotal;
-        const percentReduced = ((difficultyReduced / manualTotal) * 100).toFixed(0);
+        const manualTotal = manualData.reduce((acc, d) => acc + d.effort, 0);
+        const aiTotal = aiData.reduce((acc, d) => acc + d.effort, 0);
+        const effortReduced = manualTotal - aiTotal;
+        const percentReduced = ((effortReduced / manualTotal) * 100).toFixed(0);
+
+        // Find the overall max hours for a consistent Y-axis
+        const yMax = d3.max(manualData, d => d.effort) + 5; // Use max manual effort + buffer for the y-axis max
 
         // Update total displays
-        document.getElementById('manual-total').textContent = `${manualTotal} Points`;
-        document.getElementById('ai-total').textContent = `${aiTotal} Points`;
+        document.getElementById('manual-total').textContent = `${manualTotal} Hours`;
+        document.getElementById('ai-total').textContent = `${aiTotal} Hours`;
         
         // Update summary text
-        // FIX: Removed unnecessary escape characters (\) from template literals
-        // FIX: Corrected typo 'class'' to 'class='
         document.getElementById('summary').innerHTML = `
-            <p>AI assistance reduces the cumulative difficulty score from <strong class="text-purple-600">${manualTotal}</strong> to <strong class="text-orange-600">${aiTotal}</strong>.</p>
-            <p class="text-2xl font-bold text-green-700">This represents a ${percentReduced}% reduction in perceived creative effort.</p>
-            <p class="mt-4 text-sm text-gray-600">Tasks like ideation and iteration become trivial. The primary human difficulty shifts from technical execution (e.g., playing an instrument, designing a graphic) to high-level curation, taste, and strategic direction.</p>
+            <p>AI assistance reduces the cumulative time commitment from <strong class="text-purple-600">${manualTotal} hours</strong> to <strong class="text-orange-600">${aiTotal} hours</strong>.</p>
+            <p class="text-2xl font-bold text-green-700">This represents a ${effortReduced} hour reduction, or a ${percentReduced}% drop in estimated creative time.</p>
+            <!-- Set this final p to font-normal for contrast -->
+            <p class="mt-4 text-sm text-gray-600 font-normal">The human time investment shifts dramatically: less time is spent on labor-intensive generation and technical execution, and more time is focused on refining prompts, choosing the best output, and ensuring the final result meets the strategic goal.</p>
         `;
-
-        // Find the overall max difficulty for a consistent Y-axis
-        const yMax = 10; // Set explicit 1-10 scale
 
         /**
          * Creates a responsive bar chart.
@@ -151,7 +160,7 @@
             const containerWidth = container.node().getBoundingClientRect().width;
 
             // Set up margins
-            const margin = { top: 50, right: 20, bottom: 80, left: 60 };
+            const margin = { top: 50, right: 20, bottom: 120, left: 60 }; 
             const width = containerWidth - margin.left - margin.right;
             const height = 400 - margin.top - margin.bottom;
 
@@ -159,7 +168,6 @@
                 .attr("width", width + margin.left + margin.right)
                 .attr("height", height + margin.top + margin.bottom)
                 .append("g")
-                // FIX: Removed unnecessary escape characters (\) from template literals
                 .attr("transform", `translate(${margin.left},${margin.top})`);
 
             // --- Create Scales ---
@@ -170,9 +178,9 @@
                 .range([0, width])
                 .padding(0.2);
 
-            // Y scale (Linear scale for difficulty)
+            // Y scale (Linear scale for effort)
             const y = d3.scaleLinear()
-                .domain([0, yMax]) // Use the consistent yMax (10)
+                .domain([0, yMax]) // Use the consistent yMax 
                 .range([height, 0]);
 
             // --- Create Axes ---
@@ -180,7 +188,6 @@
             // X axis
             svg.append("g")
                 .attr("class", "axis")
-                // FIX: Removed unnecessary escape characters (\) from template literals
                 .attr("transform", `translate(0,${height})`)
                 .call(d3.axisBottom(x))
                 .selectAll("text")
@@ -192,9 +199,9 @@
             // Y axis
             svg.append("g")
                 .attr("class", "axis")
-                .call(d3.axisLeft(y).ticks(10)); // Explicitly set ticks for 1-10
+                .call(d3.axisLeft(y).ticks(5)); // Fewer ticks since scale is larger
 
-            // Y axis label
+            // Y axis label (Updated)
             svg.append("text")
                 .attr("class", "axis-label")
                 .attr("transform", "rotate(-90)")
@@ -202,7 +209,7 @@
                 .attr("x", 0 - (height / 2))
                 .attr("dy", "1em")
                 .style("text-anchor", "middle")
-                .text("Perceived Difficulty (1-10)");
+                .text("Estimated Time (Hours)"); // Updated label
 
             // --- Draw Bars ---
             svg.selectAll(".bar")
@@ -220,8 +227,8 @@
                 .transition()
                 .duration(750)
                 .delay((d, i) => i * 100)
-                .attr("y", d => y(d.difficulty))
-                .attr("height", d => height - y(d.difficulty));
+                .attr("y", d => y(d.effort)) // Use .effort (now hours)
+                .attr("height", d => height - y(d.effort)); // Use .effort (now hours)
 
 
             // --- Add Bar Labels (Numbers on top) ---
@@ -231,10 +238,10 @@
                 .append("text")
                 .attr("class", "bar-label")
                 .attr("x", d => x(d.task) + x.bandwidth() / 2)
-                .attr("y", d => y(d.difficulty) - 5)
+                .attr("y", d => y(d.effort) - 5) // Use .effort (now hours)
                 .attr("text-anchor", "middle")
                 .style("opacity", 0)
-                .text(d => d.difficulty) // Show the difficulty number
+                .text(d => d.effort) // Use .effort (now hours)
                 .transition()
                 .duration(750)
                 .delay((d, i) => i * 100 + 300)
